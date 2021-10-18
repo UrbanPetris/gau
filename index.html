@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <meta name="description"
+    content="Visor web con información geoespacial producida en el trabajo sobre el crecimiento de los principales aglomerados urbanos de la Argentina entre los años 2006 y 2016.">
+  <!-- completar acorde a proyecto final -->
+  <meta name="keywords"
+    content="aglomerado, urbano, Argentina, 33, 2006, 2010, 2016, mapa, visor, web, GIS, SIG, sistema, información, geográfica, leaflet, cippec, políticas, públicas">
+  <link rel="shortcut icon" type="image/png" href="https://www.cippec.org/wp-content/themes/cippec/favicon.png">
+  <title>Grandes Aglomerados Urbanos</title>
+  <!-- Mis propios estilos AGREGAR ACÁ CIPPEC -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/L.Control.Locate.min.css" />
+  <link rel="stylesheet" href="css/leaflet.infoButton.css">
+  <link rel="stylesheet" href="css/style.css" />
+
+
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" /> -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="js/leaflet.ajax.min.js"></script>
+  <script src="js/leaflet-providers.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+  <script src="js/L.Control.Locate.min.js" charset="utf-8"></script>
+  <script src="js/leaflet.infoButton.js"></script>
+  <script src="js/aglomerados_layer.js" type="text/javascript"></script>
+</head>
+
+<body>
+  <!-- DIV Initialization -->
+  <header>
+    <div class="row">
+      <div class="col">
+        <a href="https://www.cippec.org/"><img class="header__logo" src="images/cippec-h.svg" alt="logo CIPPEC"></a>
+      </div>
+      <div class="col">
+        <h1 class="header__texto--titulo">
+          <strong>
+            ¿CÓMO CRECEN LAS CIUDADES ARGENTINAS?
+          </strong>
+        </h1>
+        <h2 class="header__texto--subtitulo">expansión urbana de los 33 grandes aglomerados urbanos</h2>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="mapdiv"></div>
+  </main>
+
+
+  <script>
+    // *********** VARIABLES Initialization ***************
+
+    var ctlLayers;
+    var lyrgau_2006;
+    var lyrgau_2010;
+    var lyrgau_2016;
+    var objBasemaps;
+    var objOverlays;
+    var popupInfo_encabezado_titulo =
+      '<h2 class="info__texto--titulo">Bienvenido al visor de los Grandes Aglomerados Urbanos (GAU)</h2>'
+    var popupInfo_encabezado_contenido =
+      '<p class="info__texto--descripcion-contacto">desarrollado por Pablo Depetris Chauvin <br> pdepetrischauvin@gmail.com</p>  <p class="info__texto--descripcion"> El presente visor SIG permite consultar en línea la información geoespacial producida en el trabajo titulado <span class="info__texto--titulo-trabajo"> "¿CÓMO CRECEN LAS CIUDADES ARGENTINAS? Estudio de la expansión urbana de los 33 grandes aglomerados" </span> disponible en el siguiente <a href="https://www.cippec.org/wp-content/uploads/2018/11/C%C3%B3mo-crecen-las-ciudades-argentinas-CIPPEC.pdf" target="_blank">link.</a> <br><br> Para comenzar a utilizar la herramienta puede pulsar en cualquier lugar fuera de este mensaje. Puede consultar estas instrucciones en cualquier momento pulsando el botón de interrogación <i class= "fa fa-question"></i> a la izquierda. El botón <i class="fa fa-map-marker"></i> sitúa el mapa en el área donde se encuentre el usuario; pulsándolo nuevamente se vuelve a la vista anterior. El botón <i class="fa fa-eye-slash"></i> permite ocultar el controlador de capas de la derecha (recomendable para dispositivos móviles); pulsándolo nuevamente el controlador vuelve a aparecer. Por último, el botón <i class= "fa fa-building"></i> permite desplegar un listado por el medio del cual se puede automáticamente trasladarse a cualquiera de los 33 aglomerados estudiados. <br><br> Sírvase de utilizar el controlador de capas de la derecha para intercambiar entre el mapa de Open Streets Maps y una imagen satelital, así como habilitar las distintas capas de expansión del aglomerado y controlar su transparencia. <br><br> Al cliquear un polígono de cualquiera de las capas puede consultarse el nombre del aglomerado, la cantidad de hectáras que cubre dicho parche y el año de expansión.</p>'
+
+    // *********** DOM READY Initialization ***************
+
+    $(document).ready(function () {
+      // *********** MAP Initialization ***************
+
+      mymap = L.map("mapdiv", {
+        zoom: 11,
+        attributionControl: false,
+      }).fitBounds([
+        [-33.0535159338024, -60.85290248803322],
+        [-32.81084835696341, -60.47601789240767],
+      ]);
+
+      var infoButton = L.control.infoButton({
+        position: 'topleft',
+        show: true,
+        linkTitle: 'Sobre GAU',
+        title: popupInfo_encabezado_titulo,
+        html: popupInfo_encabezado_contenido
+      }).addTo(mymap);
+
+      var lc = L.control.locate({
+        showPopup: false,
+        drawCircle: false,
+        returnToPrevBounds: true,
+        flyTo: true,
+        strings: {
+          title: "Centrar mapa en ubicación de usuario"
+        }
+      }).addTo(mymap);
+
+      ctl_btn_show_control_layers = L.easyButton({
+        states: [{
+            stateName: "ocultar-control-layers",
+            icon: "fa-eye-slash",
+            title: "Ocultar Control de Capas",
+            onClick: function (control) {
+              $(".leaflet-control-layers").hide();
+              control.state("mostrar-control-layers");
+            },
+          },
+          {
+            stateName: "mostrar-control-layers",
+            icon: "fa-eye",
+            title: "Mostrar Control de Capas",
+            onClick: function (control) {
+              $(".leaflet-control-layers").show();
+              control.state("ocultar-control-layers");
+            },
+          },
+        ],
+      }).addTo(mymap);
+
+      var btn_gau = L.control({
+        position: "topleft"
+      });
+      btn_gau.onAdd = function (mymap) {
+        var div = L.DomUtil.create("div", "dropdown");
+        div.title = "Cambiar de aglomerado";
+        div.innerHTML =
+          '<button onclick="btn_seleccionar()" class="dropbtn">   </button> <div id="myDropdown" class="dropdown-content"> </div>';
+        div.firstChild.onmousedown = div.firstChild.ondblclick =
+          L.DomEvent.stopPropagation;
+        return div;
+      };
+      btn_gau.addTo(mymap);
+
+      // *********** LAYER Initialization ***************
+
+      lyrOSM = L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }
+      );
+
+      lyrImagery = L.tileLayer.provider("Esri.WorldImagery");
+
+      lyrgau_2006 = L.geoJson.ajax("data/GAU2_2cvalid.geojson", {
+        style: style_GAU,
+        onEachFeature: processGAU,
+        filter: function (json) {
+          return json.properties.cat_expansion == "2006";
+        },
+      });
+      lyrgau_2010 = L.geoJson.ajax("data/GAU2_2cvalid.geojson", {
+        style: style_GAU,
+        onEachFeature: processGAU,
+        filter: function (json) {
+          return json.properties.cat_expansion == "2010";
+        },
+      });
+      lyrgau_2016 = L.geoJson.ajax("data/GAU2_2cvalid.geojson", {
+        style: style_GAU,
+        onEachFeature: processGAU,
+        filter: function (json) {
+          return json.properties.cat_expansion == "2016";
+        },
+      });
+
+      // ******* Setup Layer Control ***********
+
+      objBasemaps = {
+        "Open Street Maps": lyrOSM,
+        "Esri World Imagery": lyrImagery,
+      };
+
+      objOverlays = {
+        "<span class='my-layer-item'>GAU 2006</span>&nbsp;&nbsp;<img src='legend/GAU2_2_20060.png' />&nbsp;&nbsp;<span id='image-opacity_gau_2006'>0.5</span> &nbsp;&nbsp; <input class='leaflet-control-layers-selector__transparencyslider' type='range' id='sldOpacity_gau_2006' min='0' max='1' step='0.1' value='0.5' title='Cambiar transparencia' />": lyrgau_2006,
+        "<span class='my-layer-item'>GAU 2010</span>&nbsp;&nbsp;<img src='legend/GAU2_2_20101.png' />&nbsp;&nbsp;<span id='image-opacity_gau_2010'>0.5</span> &nbsp;&nbsp; <input class='leaflet-control-layers-selector__transparencyslider' type='range' id='sldOpacity_gau_2010' min='0' max='1' step='0.1' value='0.5' title='Cambiar transparencia' /> ": lyrgau_2010,
+        "<span class='my-layer-item'>GAU 2016</span>&nbsp;&nbsp;<img src='legend/GAU2_2_20162.png' />&nbsp;&nbsp;<span id='image-opacity_gau_2016'>0.5</span> &nbsp;&nbsp; <input class='leaflet-control-layers-selector__transparencyslider' type='range' id='sldOpacity_gau_2016' min='0' max='1' step='0.1' value='0.5' title='Cambiar transparencia' /> ": lyrgau_2016,
+      };
+
+      ctlLayers = L.control
+        .layers(objBasemaps, objOverlays, {
+          collapsed: false
+        })
+        .addTo(mymap);
+
+      mymap.addLayer(lyrOSM);
+      mymap.addLayer(lyrgau_2006);
+      mymap.addLayer(lyrgau_2010);
+      mymap.addLayer(lyrgau_2016);
+
+      let dropdown = $("#myDropdown");
+
+      $.when(nombres_aglomerados, bounds_aglomerados).done(function () {
+        for (var i = 0; i < nombres_aglomerados.length; i++) {
+          dropdown.append(
+            $("<a></a>")
+            .attr("id", "id" + nombres_aglomerados[i].split(" ").join(
+              "")) //le tengo que sacar los espacios porque de lo contrario no funcionará con jquery
+            .text(nombres_aglomerados[i])
+          );
+
+          $("#id" + nombres_aglomerados[i].split(" ").join("")).click({
+              nombre_aglomerado: nombres_aglomerados[i]
+            }, //Agregué un event.data para poder pasarle al handler/la función los datos de nombres_aglomerados iterado
+            function (e) {
+              if (bounds_aglomerados[e.data.nombre_aglomerado]) {
+                //si ya cliqueé antes el botón antes entonces bounds_aglomerados tiene alojado los bounds para volar sin necesitar de cargar el geojson y calcular los bounds de nuevo
+                mymap.flyToBounds(
+                  bounds_aglomerados[e.data.nombre_aglomerado]
+                );
+              } else {
+                var lyr_aglomerado = L.geoJson.ajax(
+                  "data/GAU2_2cvalid.geojson", {
+                    filter: function (json) {
+                      return (
+                        json.properties.nombre_aglomerado ==
+                        e.data.nombre_aglomerado
+                      );
+                    },
+                  }
+                );
+
+                lyr_aglomerado.on("data:loaded", function () {
+                  bounds_aglomerados[e.data.nombre_aglomerado] =
+                    lyr_aglomerado.getBounds();
+                  mymap.flyToBounds(
+                    bounds_aglomerados[e.data.nombre_aglomerado]
+                  ); //Esta función sólo puede ser ejecutada cuando ya se cargó lyr_aglomerado
+                });
+              }
+            }
+          );
+        }
+      });
+
+      // ******* Events ***********
+
+      // Cierra el dropdown si el usuario cliquea fuera de él
+      window.onclick = function (event) {
+        if (!event.target.matches(".dropbtn")) {
+          var dropdowns = document.getElementsByClassName("dropdown-content");
+          var i;
+          for (i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains("show")) {
+              openDropdown.classList.remove("show");
+              mymap.scrollWheelZoom.enable();
+            }
+          }
+        }
+      };
+    });
+
+    // *******  General Functions ***********
+
+    function style_GAU(json) {
+      var att = json.properties;
+      switch (String(att.cat_expansion)) {
+        case "2006":
+          return {
+            opacity: 1,
+              color: "rgba(35,35,35,1.0)",
+              dashArray: "",
+              lineCap: "butt",
+              lineJoin: "miter",
+              weight: 1.0,
+              fill: true,
+              fillColor: "rgba(255,230,1,1.0)",
+              interactive: true,
+          };
+          break;
+
+        case "2010":
+          return {
+            opacity: 1,
+              color: "rgba(35,35,35,1.0)",
+              dashArray: "",
+              lineCap: "butt",
+              lineJoin: "miter",
+              weight: 1.0,
+              fill: true,
+              fillColor: "rgba(255,166,1,1.0)",
+              interactive: true,
+          };
+          break;
+
+        case "2016":
+          return {
+            opacity: 1,
+              color: "rgba(35,35,35,1.0)",
+              dashArray: "",
+              lineCap: "butt",
+              lineJoin: "miter",
+              weight: 1.0,
+              fill: true,
+              fillOpacity: 0.5,
+              fillColor: "rgba(255,1,35,1.0)",
+              interactive: true,
+          };
+          break;
+
+        case "CU":
+          return {
+            opacity: 1,
+              color: "rgba(35,35,35,1.0)",
+              dashArray: "",
+              lineCap: "butt",
+              lineJoin: "miter",
+              weight: 1.0,
+              fill: true,
+              fillOpacity: 0.5,
+              fillColor: "rgba(205,88,160,1.0)",
+              interactive: true,
+          };
+          break;
+
+        case "VU":
+          return {
+            opacity: 1,
+              color: "rgba(35,35,35,1.0)",
+              dashArray: "",
+              lineCap: "butt",
+              lineJoin: "miter",
+              weight: 1.0,
+              fill: true,
+              fillOpacity: 0.5,
+              fillColor: "rgba(0,0,0,1.0)",
+              interactive: true,
+          };
+          break;
+
+        default:
+          return {
+            opacity: 1,
+              color: "rgba(35,35,35,1.0)",
+              dashArray: "",
+              lineCap: "butt",
+              lineJoin: "miter",
+              weight: 1.0,
+              fill: true,
+              fillOpacity: 0.5,
+              fillColor: "rgba(88,159,207,1.0)",
+              interactive: true,
+          };
+          break;
+      }
+    }
+
+    $(".leaflet-control-layers-overlays").ready(function () {
+      //esta funciones se tienen que cargar después de que se haya cargado la class del controlador de overlays... window.onload=function(){} no es tan específico
+      $("#sldOpacity_gau_2006").on("change", function () {
+        $("#image-opacity_gau_2006").html(this.value);
+        lyrgau_2006.setStyle({
+          fillOpacity: this.value
+        });
+      });
+
+      $("#sldOpacity_gau_2010").on("change", function () {
+        $("#image-opacity_gau_2010").html(this.value);
+        lyrgau_2010.setStyle({
+          fillOpacity: this.value
+        });
+      });
+
+      $("#sldOpacity_gau_2016").on("change", function () {
+        $("#image-opacity_gau_2016").html(this.value);
+        lyrgau_2016.setStyle({
+          fillOpacity: this.value
+        });
+      });
+    });
+
+    function processGAU(json, lyr) {
+      var att = json.properties;
+      var popupContent =
+        "<h4>Id Aglomerado: " +
+        att.id_aglomerado +
+        "<h4>Nombre Aglomerado: " +
+        att.nombre_aglomerado +
+        "<h4>Año Expansión: " +
+        att.cat_expansion +
+        "<br>Área (ha): " +
+        att.area_ha;
+      lyr.bindPopup(popupContent, {
+        maxWidth: 250
+      });
+    }
+
+    function btn_seleccionar() {
+      document.getElementById("myDropdown").classList.toggle("show");
+      if (mymap.scrollWheelZoom.enabled()) {
+        mymap.scrollWheelZoom.disable();
+      } else {
+        mymap.scrollWheelZoom.enable();
+      }
+    }
+  </script>
+
+</body>
+
+</html>
