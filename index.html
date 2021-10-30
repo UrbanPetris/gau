@@ -33,6 +33,11 @@
   <script src="js/L.Control.Locate.min.js" charset="utf-8"></script>
   <script src="js/leaflet.infoButton.js"></script>
   <script src="js/aglomerados_layer.js" type="text/javascript"></script>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js">
+  </script>
 </head>
 
 <body>
@@ -258,8 +263,12 @@
       };
     });
 
-    $(document).on('vmousedown', function () { //touchmove works for iOS, I don't know if Android supports it
-      $(document).trigger('mousewheel');
+    // $(document).on('vmousedown', function () { //touchmove works for iOS, I don't know if Android supports it
+    //   $(document).trigger('mousewheel');
+    // });
+
+    $("#myDropdown").mCustomScrollbar({
+      theme: "minimal"
     });
 
     // *******  General Functions ***********
