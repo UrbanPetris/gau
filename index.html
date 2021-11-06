@@ -134,11 +134,19 @@
         div.title = "Cambiar de aglomerado";
         div.innerHTML =
           '<button onclick="btn_seleccionar()" class="dropbtn">   </button> <div id="myDropdown" class="dropdown-content"> </div>';
-        div.firstChild.onmousedown = div.firstChild.ondblclick =
-          L.DomEvent.stopPropagation;
+        // div.firstChild.onmousedown = div.firstChild.ondblclick =
+        //   L.DomEvent.stopPropagation;
         return div;
       };
       btn_gau.addTo(mymap);
+
+      var div = L.DomUtil.get('myDropdown');
+      if (!L.Browser.touch) {
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
+      } else {
+        L.DomEvent.on(div, 'click', L.DomEvent.stopPropagation);
+      }
 
       // *********** LAYER Initialization ***************
 
