@@ -126,27 +126,25 @@
         ],
       }).addTo(mymap);
 
-      var btn_gau = L.control({
-        position: "topleft"
+      let btn_gau_control = L.Control.extend({
+        options: {
+          position: "topleft"
+        },
+        onAdd: function (mymap) {
+          this._div = L.DomUtil.create('div', 'dropdown');
+          this._div.title = "Cambiar de aglomerado";
+          L.DomEvent.disableClickPropagation(this._div);
+          L.DomEvent.disableScrollPropagation(this._div);
+          this.update();
+          return this._div;
+        },
+        update: function (d) {
+          this._div.innerHTML =
+            '<button onclick="btn_seleccionar()" class="dropbtn">   </button> <div id="myDropdown" class="dropdown-content"> </div>';
+        }
       });
-      btn_gau.onAdd = function (mymap) {
-        var div = L.DomUtil.create("div", "dropdown");
-        div.title = "Cambiar de aglomerado";
-        div.innerHTML =
-          '<button onclick="btn_seleccionar()" class="dropbtn">   </button> <div id="myDropdown" class="dropdown-content"> </div>';
-        // div.firstChild.onmousedown = div.firstChild.ondblclick =
-        //   L.DomEvent.stopPropagation;
-        return div;
-      };
-      btn_gau.addTo(mymap);
 
-      var div = L.DomUtil.get('myDropdown');
-      if (!L.Browser.touch) {
-        L.DomEvent.disableClickPropagation(div);
-        L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
-      } else {
-        L.DomEvent.on(div, 'click', L.DomEvent.stopPropagation);
-      }
+      let btn_gau = new btn_gau_control().addTo(mymap);
 
       // *********** LAYER Initialization ***************
 
