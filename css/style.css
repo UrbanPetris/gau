@@ -10,6 +10,7 @@ html {
 
 header {
   /* height: 10vh; */
+
 }
 
 .header__logo {
@@ -84,8 +85,16 @@ header {
 }
 
 #mapdiv {
-  height: 95vh;
-  margin: 0rem 1rem 0rem 2rem;
+  /* height: 95vh;
+  margin: 0rem 1rem 0rem 2rem; */
+
+  position: fixed;
+  top: 101px;
+  bottom: 0;
+
+  margin: 0;
+  padding: 0;
+  width: 100%
 }
 
 .leaflet-control-layers-selector__transparencyslider {

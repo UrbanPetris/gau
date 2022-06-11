@@ -62,15 +62,15 @@
   <script>
     // *********** VARIABLES Initialization ***************
 
-    var ctlLayers;
-    var lyrgau_2006;
-    var lyrgau_2010;
-    var lyrgau_2016;
-    var objBasemaps;
-    var objOverlays;
-    var popupInfo_encabezado_titulo =
+    let ctlLayers;
+    let lyrgau_2006;
+    let lyrgau_2010;
+    let lyrgau_2016;
+    let objBasemaps;
+    let objOverlays;
+    let popupInfo_encabezado_titulo =
       '<h2 class="info__texto--titulo">Bienvenido al visor de los Grandes Aglomerados Urbanos (GAU)</h2>'
-    var popupInfo_encabezado_contenido =
+    let popupInfo_encabezado_contenido =
       '<p class="info__texto--descripcion-contacto">desarrollado por Pablo Depetris Chauvin <br> pdepetrischauvin@gmail.com</p>  <p class="info__texto--descripcion"> El presente visor SIG permite consultar en línea la información geoespacial producida en el trabajo titulado <span class="info__texto--titulo-trabajo"> "¿CÓMO CRECEN LAS CIUDADES ARGENTINAS? Estudio de la expansión urbana de los 33 grandes aglomerados" </span> disponible en el siguiente <a href="https://www.cippec.org/wp-content/uploads/2018/11/C%C3%B3mo-crecen-las-ciudades-argentinas-CIPPEC.pdf" target="_blank">link.</a> <br><br> Para comenzar a utilizar la herramienta puede pulsar en cualquier lugar fuera de este mensaje. Puede consultar estas instrucciones en cualquier momento pulsando el botón de interrogación <i class= "fa fa-question"></i> a la izquierda. El botón <i class="fa fa-map-marker"></i> sitúa el mapa en el área donde se encuentre el usuario; pulsándolo nuevamente se vuelve a la vista anterior. El botón <i class="fa fa-eye-slash"></i> permite ocultar el controlador de capas de la derecha (recomendable para dispositivos móviles); pulsándolo nuevamente el controlador vuelve a aparecer. Por último, el botón <i class= "fa fa-building"></i> permite desplegar un listado por el medio del cual se puede automáticamente trasladarse a cualquiera de los 33 aglomerados estudiados. <br><br> Sírvase de utilizar el controlador de capas de la derecha para intercambiar entre el mapa de Open Streets Maps y una imagen satelital, así como habilitar las distintas capas de expansión del aglomerado y controlar su transparencia. <br><br> Al cliquear un polígono de cualquiera de las capas puede consultarse el nombre del aglomerado, la cantidad de hectáras que cubre dicho parche y el año de expansión.</p>'
 
     // *********** DOM READY Initialization ***************
@@ -86,7 +86,7 @@
         [-32.81084835696341, -60.47601789240767],
       ]);
 
-      var infoButton = L.control.infoButton({
+      let infoButton = L.control.infoButton({
         position: 'topleft',
         show: true,
         linkTitle: 'Sobre GAU',
@@ -94,7 +94,7 @@
         html: popupInfo_encabezado_contenido
       }).addTo(mymap);
 
-      var lc = L.control.locate({
+      let lc = L.control.locate({
         showPopup: false,
         drawCircle: false,
         returnToPrevBounds: true,
@@ -112,6 +112,7 @@
             onClick: function (control) {
               $(".leaflet-control-layers").hide();
               control.state("mostrar-control-layers");
+              control.preventDefault()
             },
           },
           {
@@ -121,6 +122,7 @@
             onClick: function (control) {
               $(".leaflet-control-layers").show();
               control.state("ocultar-control-layers");
+              control.preventDefault()
             },
           },
         ],
@@ -205,7 +207,7 @@
       let dropdown = $("#myDropdown");
 
       $.when(nombres_aglomerados, bounds_aglomerados).done(function () {
-        for (var i = 0; i < nombres_aglomerados.length; i++) {
+        for (let i = 0; i < nombres_aglomerados.length; i++) {
           dropdown.append(
             $("<a></a>")
             .attr("id", "id" + nombres_aglomerados[i].split(" ").join(
@@ -223,7 +225,7 @@
                   bounds_aglomerados[e.data.nombre_aglomerado]
                 );
               } else {
-                var lyr_aglomerado = L.geoJson.ajax(
+                let lyr_aglomerado = L.geoJson.ajax(
                   "data/GAU2_2cvalid.geojson", {
                     filter: function (json) {
                       return (
@@ -252,10 +254,10 @@
       // Cierra el dropdown si el usuario cliquea fuera de él
       window.onclick = function (event) {
         if (!event.target.matches(".dropbtn")) {
-          var dropdowns = document.getElementsByClassName("dropdown-content");
-          var i;
+          let dropdowns = document.getElementsByClassName("dropdown-content");
+          let i;
           for (i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
+            let openDropdown = dropdowns[i];
             if (openDropdown.classList.contains("show")) {
               openDropdown.classList.remove("show");
               mymap.scrollWheelZoom.enable();
@@ -265,14 +267,14 @@
       };
     });
 
-    $(document).on('vmousemove', function () { //touchmove works for iOS, I don't know if Android supports it
+    $(document).on('vmousemove', function () {
       $(document).trigger('mousewheel');
     });
 
     // *******  General Functions ***********
 
     function style_GAU(json) {
-      var att = json.properties;
+      let att = json.properties;
       switch (String(att.cat_expansion)) {
         case "2006":
           return {
@@ -389,8 +391,8 @@
     });
 
     function processGAU(json, lyr) {
-      var att = json.properties;
-      var popupContent =
+      let att = json.properties;
+      let popupContent =
         "<h4>Id Aglomerado: " +
         att.id_aglomerado +
         "<h4>Nombre Aglomerado: " +
